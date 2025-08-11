@@ -50,7 +50,7 @@ function Sidebar() {
         <nav className="space-y-4 w-full">
           {/* Home Link */}
           <Link
-            to="/" // Use Link to for navigation
+            to="/home" // Use Link to for navigation
             className="flex items-center text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-md"
           >
             <svg className={`size-6 ${isMinimized ? 'mx-auto' : 'mr-4'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
