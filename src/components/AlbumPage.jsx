@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Loading from "./Loading"; // Import the Loading component
+import Loading from "./Loading"; 
 
-// Helper functions (keep these, they are fine)
 function formatDuration(ms) {
   const minutes = Math.floor(ms / 60000);
   const seconds = Math.floor(((ms % 60000) / 1000));
@@ -28,22 +27,17 @@ function formatAddedDate(dateString) {
   return diffYears === 1 ? "1 year ago" : `${diffYears} years ago`;
 }
 
-// AlbumPage now correctly destructures likedTracks and setLikedTracks from props
 function AlbumPage({ albumData, setShowAlbumPage, setNowPlaying, likedTracks, setLikedTracks }) {
   const [loading, setLoading] = useState(true);
-
-  // REMOVE THE LOCAL likedTracks STATE INITIALIZATION HERE:
-  // const [likedTracks, setLikedTracks] = useState({}); // <--- REMOVE OR COMMENT OUT THIS LINE
 
   useEffect(() => {
     if (albumData) {
       setLoading(false);
-      // No need to initialize liked status here from scratch.
-      // The likedTracks prop already holds the global state.
+
     } else {
       setLoading(true);
     }
-  }, [albumData]); // Dependency on albumData is correct
+  }, [albumData]); 
 
   if (loading) {
     return <Loading />;
@@ -62,21 +56,16 @@ function AlbumPage({ albumData, setShowAlbumPage, setNowPlaying, likedTracks, se
   const ownerName = albumData.owner?.display_name || albumData.artists?.[0]?.name || 'Various Artists';
   const totalTracks = albumData.tracks?.total || albumData.total_tracks;
 
-  // Function to toggle "like" status of a track - NOW USES PROPS' setLikedTracks
-  // This is the updated handleToggleLikeTrack function
 const handleToggleLikeTrack = (e, track) => {
-  e.stopPropagation(); // Prevent the row's onClick from firing
+  e.stopPropagation();
 
-  // 1. Play the music first
   if (track.preview_url) {
     setNowPlaying(track.preview_url);
     console.log(`Now playing: "${track.name}"`);
   } else {
-    // Optional: provide user feedback if there's no preview
     console.warn(`No preview URL found for "${track.name}".`);
   }
 
-  // 2. Then, toggle the liked status
   setLikedTracks(prevLikedTracks => {
     const isCurrentlyLiked = !!prevLikedTracks[track.id];
     const newLikedTracks = { ...prevLikedTracks };
@@ -95,7 +84,6 @@ const handleToggleLikeTrack = (e, track) => {
 
   return (
     <div className="flex-1 bg-gradient-to-b from-[#1A1A1A] to-[#121212] min-h-screen text-white font-montserrat overflow-y-auto">
-      {/* Back Button */}
       <div className="p-4 sm:p-6 bg-transparent">
         <button
           onClick={() => setShowAlbumPage(false)}

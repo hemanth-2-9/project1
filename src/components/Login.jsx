@@ -12,7 +12,7 @@ const Login = () => {
 
     function onSubmitScuccess() {
         // In a real application, you'd likely store a JWT token here (e.g., in localStorage)
-        navigate('/', { replace: true })
+        navigate('/home', { replace: true })
     }
 
     function onSubmitFailure(msg) {
