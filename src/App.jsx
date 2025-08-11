@@ -1,5 +1,6 @@
 import './App.css';
-import React, { useState,Navigate } from 'react';
+import { useState} from 'react';
+import { Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Home from './components/Home';
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
