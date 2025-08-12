@@ -7,7 +7,6 @@ import { Route, Routes, BrowserRouter } from 'react-router-dom';
 import Error from './components/Error';
 import PremiumPlansPage from './components/PremiumPlansPage';
 import MyLibraryPage from './components/MyLibraryPage';
-import AudioPlayer from './components/AudioPlayer'; 
 
 function App() {
   const [likedTracks, setLikedTracks] = useState({});
@@ -41,7 +40,7 @@ function App() {
         />
         <Route path='*' element={<Error />} />
       </Routes>
-      {nowPlayingUrl && <AudioPlayer nowPlayingUrl={nowPlayingUrl} />}
+      
     </BrowserRouter>
   );
 }
