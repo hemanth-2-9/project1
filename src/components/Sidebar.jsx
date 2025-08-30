@@ -61,7 +61,7 @@ function Sidebar() {
 
           {/* Your Library Link - UPDATED TO LINK TO /my-library */}
           <Link
-            to="/library" // Navigate to the new My Library page
+            to="/my-library" // Navigate to the new My Library page
             className="flex items-center text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-md"
           >
             <svg className={`size-6 ${isMinimized ? 'mx-auto' : 'mr-4'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">

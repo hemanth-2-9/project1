@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Loading from "./Loading";
 import AlbumPage from "./AlbumPage";
 import Sidebar from "./Sidebar";
 import ErrorScreen from "./ErrorScreen";
 import SearchBar from "./SearchBar";
 
-function Home({ likedTracks, setLikedTracks, setNowPlaying }) { // Added setNowPlaying
+function Home({ likedTracks, setLikedTracks, setNowPlaying }) { 
   const [tracks, setTracks] = useState([]);
   const [categories, setCategories] = useState([]);
   const [release, setRelease] = useState([]);
@@ -15,9 +16,10 @@ function Home({ likedTracks, setLikedTracks, setNowPlaying }) { // Added setNowP
 
   const [showAlbumPage, setShowAlbumPage] = useState(false);
   const [showCategoryPage, setShowCategoryPage] = useState(false);
-  // Removed nowPlaying state, it's now managed in App.jsx
   const [showErrorScreen, setShowErrorScreen] = useState(false);
   const [errorSource, setErrorSource] = useState(null);
+  
+  const navigate = useNavigate();
 
   const handleError = (source, error) => {
     console.error(`Error fetching ${source}:`, error);
@@ -25,121 +27,98 @@ function Home({ likedTracks, setLikedTracks, setNowPlaying }) { // Added setNowP
     setShowErrorScreen(true);
   };
 
+  const fetchAuthenticatedData = async (url) => {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+      navigate('/login', { replace: true });
+      return null;
+    }
+
+    const options = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    const response = await fetch(url, options);
+
+    if (response.status === 401) {
+      localStorage.removeItem('jwt_token');
+      navigate('/login', { replace: true });
+      throw new Error('Unauthorized');
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  };
+
   useEffect(() => {
-    fetchTrack();
-    fetchCategories();
-    fetchRelease();
+    const loadInitialData = async () => {
+        try {
+            const featuredPlaylistsData = await fetchAuthenticatedData("https://apis2.ccbp.in/spotify-clone/featured-playlists");
+            if (featuredPlaylistsData) setTracks(featuredPlaylistsData.playlists.items);
+
+            const categoriesData = await fetchAuthenticatedData("https://apis2.ccbp.in/spotify-clone/categories");
+            if (categoriesData) setCategories(categoriesData.categories.items);
+
+            const newReleasesData = await fetchAuthenticatedData("https://apis2.ccbp.in/spotify-clone/new-releases");
+            if (newReleasesData) setRelease(newReleasesData.albums.items);
+
+        } catch (error) {
+            if (error.message !== 'Unauthorized') {
+                handleError("initial data", error);
+            }
+        }
+    };
+    
+    loadInitialData();
   }, []);
 
-  async function fetchTrack() {
-    try {
-      const response = await fetch(
-        "https://apis2.ccbp.in/spotify-clone/featured-playlists"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setTracks(data.playlists.items);
-    } catch (error) {
-      handleError("featured playlists", error);
-    }
-  }
-
-  async function fetchCategories() {
-    try {
-      const response = await fetch(
-        "https://apis2.ccbp.in/spotify-clone/categories"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setCategories(data.categories.items);
-    } catch (error) {
-      handleError("categories", error);
-    }
-  }
-
-  async function fetchRelease() {
-    try {
-      const response = await fetch(
-        "https://apis2.ccbp.in/spotify-clone/new-releases"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setRelease(data.albums.items);
-    } catch (error) {
-      handleError("new releases", error);
-    }
-  }
-
-  // --- FIX --- This function should fetch album details, not show an error
   async function openAlbum(albumId) {
     try {
-      const response = await fetch(
-        `https://apis2.ccbp.in/spotify-clone/albums-details/${albumId}` // Correct API path for albums
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await fetchAuthenticatedData(`https://apis2.ccbp.in/spotify-clone/albums-details/${albumId}`);
+      if(data) {
+        setAlbumData(data);
+        setShowAlbumPage(true);
+        setShowCategoryPage(false);
       }
-      const data = await response.json();
-      setAlbumData(data);
-      setShowAlbumPage(true);
-      setShowCategoryPage(false);
     } catch (error) {
-      handleError("album details", error);
+       if (error.message !== 'Unauthorized') handleError("album details", error);
     }
   }
 
-  // --- FIX --- This function should play the playlist, not just log
   async function playPlaylist(playlistId) {
     try {
-      const response = await fetch(
-        `https://apis2.ccbp.in/spotify-clone/playlists-details/${playlistId}`
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setAlbumData(data);
-      setShowAlbumPage(true);
-      setShowCategoryPage(false);
-      // Automatically play the first song in the playlist
-      const firstTrack = data.tracks.items[0]?.track;
-      if (firstTrack && firstTrack.preview_url) {
-        setNowPlaying(firstTrack.preview_url);
-      }
+        const data = await fetchAuthenticatedData(`https://apis2.ccbp.in/spotify-clone/playlists-details/${playlistId}`);
+        if(data) {
+            setAlbumData(data);
+            setShowAlbumPage(true);
+            setShowCategoryPage(false);
+            const firstTrack = data.tracks.items[0]?.track;
+            if (firstTrack && firstTrack.preview_url) {
+                setNowPlaying(firstTrack.preview_url);
+            }
+        }
     } catch (error) {
-      handleError("playlist details", error);
+        if (error.message !== 'Unauthorized') handleError("playlist details", error);
     }
   }
 
-  // --- FIX --- This function should fetch category playlists, not show an error
-  async function openCategory(categoryId, categoryName) {
-    console.log(`Clicked category: ${categoryName} (${categoryId})`);
+  async function openCategory(categoryId) {
     try {
-      const response = await fetch(
-        `https://apis2.ccbp.in/spotify-clone/categories-playlists/${categoryId}`
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setCategoryData(data.playlists.items);
-      setShowCategoryPage(true);
-      setShowAlbumPage(false);
+        const data = await fetchAuthenticatedData(`https://apis2.ccbp.in/spotify-clone/categories-playlists/${categoryId}`);
+        if (data) {
+            setCategoryData(data.playlists.items);
+            setShowCategoryPage(true);
+            setShowAlbumPage(false);
+        }
     } catch (error) {
-      handleError("category playlists", error);
+        if (error.message !== 'Unauthorized') handleError("category playlists", error);
     }
   }
-
-  // This handleAddtoLibrary is for playlists/albums, not individual tracks
-  const handleAddtoLibrary = (id, name, type = 'playlist') => {
-    console.log(`Adding ${type}: "${name}" (ID: ${id}) to library!`);
-  };
 
   if (showErrorScreen) {
     return <ErrorScreen errorSource={errorSource} />;
@@ -164,7 +143,6 @@ function Home({ likedTracks, setLikedTracks, setNowPlaying }) { // Added setNowP
   return (
     <div className="bg-[#121212] h-screen flex font-montserrat">
       <Sidebar />
-
       <div className="flex-1 overflow-y-auto p-8 lg:p-10 pb-20">
         {showCategoryPage ? (
           <>
@@ -207,11 +185,6 @@ function Home({ likedTracks, setLikedTracks, setNowPlaying }) { // Added setNowP
                   </p>
                 </div>
               ))}
-              {categoryData && categoryData.length === 0 && (
-                <p className="text-gray-400 col-span-full text-center mt-10">
-                  No playlists found for this category.
-                </p>
-              )}
             </div>
           </>
         ) : (
@@ -259,7 +232,7 @@ function Home({ likedTracks, setLikedTracks, setNowPlaying }) { // Added setNowP
                 <div
                   key={category.id}
                   className="bg-[#1A1A1A] rounded-lg p-4 cursor-pointer hover:bg-[#282828] transition-all duration-300 group relative"
-                  onClick={() => openCategory(category.id, category.name)}
+                  onClick={() => openCategory(category.id)}
                 >
                   <div className="relative w-full aspect-square mb-4">
                     {category.icons?.[0]?.url && (
@@ -313,3 +286,4 @@ function Home({ likedTracks, setLikedTracks, setNowPlaying }) { // Added setNowP
 }
 
 export default Home;
+

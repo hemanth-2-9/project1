@@ -10,8 +10,10 @@ const Login = () => {
 
     const navigate = useNavigate()
 
-    function onSubmitScuccess() {
-        // In a real application, you'd likely store a JWT token here (e.g., in localStorage)
+    // UPDATED: This function now accepts the token from the API response
+    function onSubmitSuccess(jwtToken) {
+        // Store the token in localStorage to "remember" the user's session
+        localStorage.setItem('jwt_token', jwtToken);
         navigate('/home', { replace: true })
     }
 
@@ -23,15 +25,10 @@ const Login = () => {
     const subbmitForm = async (e) => {
         e.preventDefault()
         const userDetails = { username, password }
-        const url = 'https://apis.ccbp.in/login' // Keep the full URL for direct call
+        const url = 'https://apis.ccbp.in/login'
         const options = {
             method: 'POST',
             body: JSON.stringify(userDetails),
-            // IMPORTANT: Removed the 'Content-Type' header based on our debugging
-            // This replicates the behavior where your original code worked.
-            // headers: {
-            //     'Content-Type': 'application/json',
-            // },
         }
 
         try {
@@ -41,17 +38,12 @@ const Login = () => {
             console.log("Parsed Data:", data)
 
             if (response.ok === true) {
-                onSubmitScuccess()
+                // UPDATED: Pass the token from the data to the success function
+                onSubmitSuccess(data.jwt_token) 
             } else {
-                // If response is not OK (e.g., 400 Bad Request, 401 Unauthorized)
-                // The API's error_msg will be displayed.
                 onSubmitFailure(data.error_msg || "Login failed. Please check your credentials.")
             }
         } catch (error) {
-            // This catch block will execute for true network errors:
-            // - CORS policy blocking the request
-            // - Server being unreachable/down
-            // - DNS issues
             console.error("Fetch error in try...catch block:", error)
             onSubmitFailure("Network error or server connection issue. Please try again.")
         }
@@ -59,25 +51,24 @@ const Login = () => {
 
     function onChangeUsername(e) {
         setUsername(e.target.value)
-        setShowSubmitError(false) // Clear error on new input
+        setShowSubmitError(false) 
     }
 
     function onChangePassword(e) {
         setPassword(e.target.value)
-        setShowSubmitError(false) // Clear error on new input
+        setShowSubmitError(false) 
     }
 
     return (
         <div
-            className='min-h-screen flex items-center justify-center bg-cover bg-center'
+            className='min-h-screen bg-cover bg-center flex items-center justify-center'
             style={{
-                backgroundImage: "url('https://res.cloudinary.com/dsyfrwb0s/image/upload/v1751820646/spotify-profile_myqtkm.png')",
+                backgroundImage: "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://res.cloudinary.com/dsyfrwb0s/image/upload/v1751820646/spotify-profile_myqtkm.png')",
             }}
         >
             <div className='bg-black bg-opacity-80 rounded-lg p-10 w-full max-w-sm text-white shadow-xl flex flex-col items-center'>
                 <form onSubmit={subbmitForm} className='w-full'>
                     <div className='flex flex-col items-center mb-8'>
-                        {/* Spotify Logo placeholder or actual image */}
                         <img
                             src='https://res.cloudinary.com/dsyfrwb0s/image/upload/v1751821365/profile1_p9o5pc.png'
                             alt='Spotify Logo'

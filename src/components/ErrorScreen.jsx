@@ -12,7 +12,7 @@ const ErrorScreen = () => {
 
   const handleGoHome = () => {
     console.log("ErrorScreen: Attempting to navigate to the Home page.");
-    navigate('/', { replace: true });
+    navigate('/home', { replace: true });
   };
 
   return (

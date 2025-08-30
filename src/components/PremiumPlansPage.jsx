@@ -67,7 +67,7 @@ function PremiumPlansPage() {
   }, []); // Empty dependency array means this runs once on mount
 
   const handleGoBack = () => {
-    navigate('/', { replace: true });
+    navigate('/home', { replace: true });
   };
 
   // --- Conditional Rendering for Loading State ---
