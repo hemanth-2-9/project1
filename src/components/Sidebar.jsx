@@ -1,11 +1,23 @@
 import React, { useState } from "react";
-import { Link } from 'react-router-dom'; // Import Link
+// UPDATED: Import useNavigate along with Link
+import { Link, useNavigate } from 'react-router-dom'; 
 
 function Sidebar() {
   const [isMinimized, setIsMinimized] = useState(false);
+  // 1. Initialize the navigate function
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsMinimized(prev => !prev);
+  };
+
+  // 2. Create the function to handle the logout action
+  const handleLogout = () => {
+    // This is the most important step: remove the user's token
+    localStorage.removeItem('jwt_token');
+
+    // Redirect the user to the login page
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -15,7 +27,6 @@ function Sidebar() {
     >
       {/* Top Section: Logo/App Icon and Hamburger Toggle */}
       <div className="flex flex-col items-center">
-        {/* Conditional Logo/App Icon */}
         {isMinimized ? (
           <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center my-4">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
@@ -29,7 +40,6 @@ function Sidebar() {
           />
         )}
 
-        {/* Hamburger/Collapse Toggle Button */}
         <button
           onClick={toggleSidebar}
           className={`text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-md mb-8
@@ -46,35 +56,20 @@ function Sidebar() {
           )}
         </button>
 
-        {/* Navigation Section */}
         <nav className="space-y-4 w-full">
-          {/* Home Link */}
-          <Link
-            to="/home" // Use Link to for navigation
-            className="flex items-center text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-md"
-          >
+          <Link to="/home" className="flex items-center text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-md">
             <svg className={`size-6 ${isMinimized ? 'mx-auto' : 'mr-4'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 0 01-1 1h-3m-6 0a1 1 0 001 1h3v-3m-3 3h-3a1 1 0 01-1-1v-4m9 11v-4h-3c-.667 0-1.333-.333-2-1"></path>
             </svg>
             <span className={`font-montserrat text-sm font-semibold ${isMinimized ? 'hidden' : 'block'}`}>Home</span>
           </Link>
-
-          {/* Your Library Link - UPDATED TO LINK TO /my-library */}
-          <Link
-            to="/my-library" // Navigate to the new My Library page
-            className="flex items-center text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-md"
-          >
+          <Link to="/my-library" className="flex items-center text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-md">
             <svg className={`size-6 ${isMinimized ? 'mx-auto' : 'mr-4'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
             </svg>
             <span className={`font-montserrat text-sm font-semibold ${isMinimized ? 'hidden' : 'block'}`}>Your Library</span>
           </Link>
-
-          {/* Get Premium Link */}
-          <Link
-            to="/premium" // Use Link to for navigation
-            className="flex items-center text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-md"
-          >
+          <Link to="/premium" className="flex items-center text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-md">
             <svg className={`size-6 ${isMinimized ? 'mx-auto' : 'mr-4'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"></path>
             </svg>
@@ -83,11 +78,12 @@ function Sidebar() {
         </nav>
       </div>
 
-      {/* Bottom Section: Logout */}
+      {/* 3. UPDATED Bottom Section: Logout */}
       <div className="mt-auto w-full">
-        <Link
-          to="/login"
-          className="flex items-center justify-center text-gray-400 hover:text-white transition-colors duration-200 py-2 rounded-md"
+        {/* Changed from Link to button and added the onClick handler */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center justify-center w-full text-gray-400 hover:text-white transition-colors duration-200 py-2 rounded-md"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -104,7 +100,7 @@ function Sidebar() {
             />
           </svg>
           <span className={`text-sm font-semibold font-montserrat ${isMinimized ? 'hidden' : 'block'}`}>Logout</span>
-        </Link>
+        </button>
       </div>
     </div>
   );
