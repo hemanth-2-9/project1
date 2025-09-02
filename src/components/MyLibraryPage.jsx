@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Loading from "./Loading";
@@ -36,12 +36,16 @@ function MyLibraryPage({ likedTracks, setLikedTracks, setNowPlaying }) {
   // Show loader for a few seconds when entering the page
   useEffect(() => {
     const timer = setTimeout(() => {
-      const tracksArray = Object.values(likedTracks);
-      setDisplayTracks(tracksArray);
       setLoading(false);
-    }, 1500); // 1.5 sec loader
+    }, 1500); // 1.5 sec loader on mount
 
     return () => clearTimeout(timer);
+  }, []); // <-- Empty dependency array means this runs only ONCE
+
+  // NEW useEffect #2: Instantly syncs the display list when likedTracks changes
+  useEffect(() => {
+    // This now happens immediately, without a delay
+    setDisplayTracks(Object.values(likedTracks));
   }, [likedTracks]);
 
   const handleGoBack = () => {
@@ -139,13 +143,11 @@ function MyLibraryPage({ likedTracks, setLikedTracks, setNowPlaying }) {
                 <th className="py-3 px-4 text-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
                     viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-4 mx-auto"
+                    fill="currentColor"
+                    class="size-4"
                   >
-                    <path d="M11.645 20.917 3.033 12.25a2.25 2.25 0 0 1 0-3.182l.836-.836c.582-.582 1.57-.582 2.152 0l1.458 1.459c.287.287.72.338 1.05.127l.95-.609c.783-.5 1.72-.5 2.503 0l.95.609c.33.211.763.16.1.05l1.458-1.459c.582-.582 1.57-.582 2.152 0l.836.836a2.25 2.25 0 0 1 0 3.182l-8.612 8.667a.75.75 0 0 1-1.08 0Z" />
+                    <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
                   </svg>
                 </th>
                 <th className="py-3 px-4 text-center">
@@ -206,9 +208,9 @@ function MyLibraryPage({ likedTracks, setLikedTracks, setNowPlaying }) {
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         fill="currentColor"
-                        className="size-5"
+                        className="size-4 cursor-pointer"
                       >
-                        <path d="M11.645 20.917 3.033 12.25a2.25 2.25 0 0 1 0-3.182l.836-.836c.582-.582 1.57-.582 2.152 0l1.458 1.459c.287.287.72.338 1.05.127l.95-.609c.783-.5 1.72-.5 2.503 0l.95.609c.33.211.763.16.1.05l1.458-1.459c.582-.582 1.57-.582 2.152 0l.836.836a2.25 2.25 0 0 1 0 3.182l-8.612 8.667a.75.75 0 0 1-1.08 0Z" />
+                        <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
                       </svg>
                     </button>
                   </td>
